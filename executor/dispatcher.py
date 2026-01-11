@@ -10,30 +10,32 @@ ACTION_MAP = {
     "open_app": open_app
 }
 
-def execute(plan: dict):
+def execute(plan):
     """
     Executes steps until observe
     """
-    steps = plan.get("steps", [])
 
-    for step in steps:
-        action = step.get("action")
+    for step in plan.steps:
 
-        if action == "observe":
+        if step.action == "observe":
             return "OBSERVE"
         
-        if action not in ACTION_MAP:
-            raise ValueError(f"Blocked unknown action: {action}")
+        if step.action not in ACTION_MAP:
+            raise ValueError(f"Blocked action: {step.action}")
         
-        fn = ACTION_MAP[action]
-        params = {k: v for k, v in step.items() if k != "action"}
+        fn = ACTION_MAP[step.action]
 
         try:
-            fn(**params)
-            state["last_action"] = action
+            if step.parameters is not None:
+                fn(**step.parameters.model_dump())
+            else:
+                fn()
+
+            state["last_action"] = step.action
             state["current_step"] += 1
 
         except Exception as e:
+            state["errors"] += 1
             raise RuntimeError(f"Execution failed: {e}")
         
     return "DONE"

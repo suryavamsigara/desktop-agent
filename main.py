@@ -1,12 +1,27 @@
-from planner import state
+from planner.state import state
 from executor.dispatcher import execute
+from agent_orchestrator import create_plan
 
 state["goal"] = input(">> ")
 
 observation = ""
 
 while not state["done"]:
-    plan = {
+    plan = create_plan(observation)
+    result = execute(plan)
+
+    if result == "OBSERVE":
+        state["done"] = True
+    else:
+        state["done"] = True
+
+    print(result)
+
+
+
+
+"""
+plan = {
         "steps": [
             {"action": "open_app", "app_name": "brave"},
             {"action": "wait", "seconds": 2},
@@ -16,7 +31,4 @@ while not state["done"]:
             {"action": "press", "key": "enter"}
         ]
     }
-    result = execute(plan)
-    state["done"] = True
-
-    print(result)
+"""
