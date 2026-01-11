@@ -1,8 +1,22 @@
-from actions import type_text, move_mouse
+from planner import state
+from executor.dispatcher import execute
 
-def main():
-    type_text("hello")
-    move_mouse(0, 0)
+state["goal"] = input(">> ")
 
-if __name__ == "__main__":
-    main()
+observation = ""
+
+while not state["done"]:
+    plan = {
+        "steps": [
+            {"action": "open_app", "app_name": "brave"},
+            {"action": "wait", "seconds": 2},
+            {"action": "move_mouse", "x": 500, "y": 60},
+            {"action": "click"},
+            {"action": "type", "text": "black holes"},
+            {"action": "press", "key": "enter"}
+        ]
+    }
+    result = execute(plan)
+    state["done"] = True
+
+    print(result)
