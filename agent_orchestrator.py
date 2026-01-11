@@ -27,8 +27,10 @@ SYSTEM_PROMPT = """
     - You DO NOT execute actions
     - You ONLY output structured JSON
     - Use ONLY allowed actions
-    - After screen-changing actions, insert an "observe" step
     - Never hallucinate coordinates unless necessary
+    - Use observe ONLY if you must read screen content or next action depends on reading screen content.
+    - Do NOT observe between deterministic actins.
+    - Continue from the current state
 
     Allowed actions:
     open_app, type, press, click, wait, observe
@@ -43,6 +45,9 @@ def create_plan(observation: str = "") -> Plan:
 
     user_prompt = f"""
         GOAL: {state["goal"]}
+
+        ALREADY EXECUTED ACTIONS:
+        {state["history"]}
         
         LAST OBSERVATION: {observation if observation else None}
 
@@ -50,7 +55,7 @@ def create_plan(observation: str = "") -> Plan:
     """
 
     response = client.models.generate_content(
-        model="gemini-2.5-flash",
+        model="gemini-2.5-flash-lite",
         contents=[
             types.Content(
                 role="user",

@@ -1,17 +1,23 @@
 from planner.state import state
 from executor.dispatcher import execute
 from agent_orchestrator import create_plan
+from perception.screen import observe_screen
 
 state["goal"] = input(">> ")
 
 observation = ""
 
-while not state["done"]:
+MAX_TURNS = 10
+turns = 0
+
+while not state["done"] and turns < MAX_TURNS:
+    turns += 1
     plan = create_plan(observation)
+    print(plan.model_dump())
     result = execute(plan)
 
     if result == "OBSERVE":
-        state["done"] = True
+        observation = observe_screen()
     else:
         state["done"] = True
 

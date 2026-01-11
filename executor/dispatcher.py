@@ -5,9 +5,11 @@ ACTION_MAP = {
     "wait": wait,
     "type": type_text,
     "press": press_key,
+    "hotkey": hot_key,
     "move_mouse": move_mouse,
     "click": click_mouse,
-    "open_app": open_app
+    "open_app": open_app,
+    "screenshot": screenshot,
 }
 
 def execute(plan):
@@ -32,6 +34,7 @@ def execute(plan):
                 fn()
 
             state["last_action"] = step.action
+            state["history"].append(step.action)
             state["current_step"] += 1
 
         except Exception as e:

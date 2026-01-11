@@ -4,6 +4,6 @@ state = {
     "current_step": 0,
     "last_action": None,
     "errors": 0,
-    "observations": [],
+    "history": [],
     "done": False
 }

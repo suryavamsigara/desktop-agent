@@ -17,6 +17,10 @@ def press_key(key: str):
     """Presses a single key (enter, tab, esc, etc..)"""
     pyautogui.press(key)
 
+def hot_key(*keys):
+    """Presses a key combination"""
+    pyautogui.hotkey(*keys)
+
 
 # Mouse actions
 
@@ -41,6 +45,9 @@ def double_click(x: int=None, y: int=None):
     else:
         pyautogui.doubleClick()
 
+def scroll(amount: int):
+    pyautogui.scroll(amount)
+
 # Application actions
 
 def open_app(app_name: str):
@@ -51,6 +58,13 @@ def open_app(app_name: str):
         os.startfile(app_name)
     except Exception as e:
         raise RuntimeError(f"Failed to open app '{app_name}': {e}")
+
+# Screen actions
+def screenshot(path: str="screenshot.png"):
+    """Takes a screenshot"""
+    img = pyautogui.screenshot()
+    img.save(path)
+    return path
     
 
 def abort():
