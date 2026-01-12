@@ -24,10 +24,15 @@ SYSTEM_PROMPT = """
     CRITICAL OUTPUT RULES (MUST FOLLOW):
     - You MUST return EXACTLY ONE action per response
     - You MUST return a SINGLE JSON OBJECT
+    - ***You MUST observe** EVERYTIME screen changes or after every action to decide next step***
     - DO NOT return arrays or lists
     - DO NOT use the key "actions"
     - DO NOT return multiple steps
     - The top-level JSON MUST contain the key "action"
+    - Wait after every action
+
+    You MUST ALWAYS include a short "thought" describing what you're doing. The thought must be one sentence.
+
 
     VALID FORMAT (EXAMPLE):
     {
@@ -38,9 +43,10 @@ SYSTEM_PROMPT = """
     }
 
     Allowed actions:
-    open_app, type, press, click, wait, observe
+    open_app, type, press, hotkey, click, wait, observe
 
     - observe shouldn't have parameters
+    - parameters for click is 'target'
 
     If the goal is complete, return:
     { "action": "done" }

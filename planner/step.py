@@ -5,6 +5,7 @@ from planner.action_schemas import (
     OpenAppParams,
     TypeParams,
     PressParams,
+    HotkeyParams,
     ClickParams,
     WaitParams,
 )
@@ -14,6 +15,7 @@ class Decision(BaseModel):
         "open_app",
         "type",
         "press",
+        "hotkey",
         "click",
         "wait",
         "observe",
@@ -24,6 +26,7 @@ class Decision(BaseModel):
         OpenAppParams,
         TypeParams,
         PressParams,
+        HotkeyParams,
         ClickParams,
         WaitParams,
         None,
@@ -43,6 +46,10 @@ class Decision(BaseModel):
         if self.action == "press":
             if not self.parameters or not hasattr(self.parameters, "key"):
                 raise ValueError("press requires parameters.key")
+            
+        if self.action == "hotkey":
+            if not isinstance(self.parameters, HotkeyParams):
+                raise ValueError("hotkey requires HotkeyParams(keys)")
 
         if self.action == "click":
             if not isinstance(self.parameters, ClickParams):

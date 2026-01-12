@@ -34,13 +34,7 @@ def execute_decision(decision):
         }
 
     if decision.action == "click":
-        if decision.parameters.target:
-            semantic_click(decision.parameters.target)
-        else:
-            pyautogui.click(
-                decision.parameters.x,
-                decision.parameters.y
-            )
+        semantic_click(decision.parameters.target)
         return {
             "type": "ACTION_RESULT",
             "action": decision.action,

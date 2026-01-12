@@ -40,3 +40,25 @@ def find_text_position(target: str, image: Image.Image):
 
             return cx, cy
     return None
+
+def detect_clickables(image):
+    """
+    Returns a list of visible text elements with positions.
+    """
+    data = pytesseract.image_to_data(image, output_type=pytesseract.Output.DICT)
+
+    items = []
+    for i, text in enumerate(data["text"]):
+        text = text.strip()
+        if (len(text) < 4):
+            continue
+
+        if text.startswith("earch"):
+            text = "Search"
+
+        items.append({
+            "text": text,
+            "x": data["left"][i] + data["width"][i] // 2,
+            "y": data["top"][i] + data["height"][i] // 2
+        })
+    return items

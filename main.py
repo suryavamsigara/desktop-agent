@@ -2,6 +2,7 @@ from planner.state import state
 from executor.dispatcher import execute_decision
 from agent_orchestrator import next_decision
 from perception.screen import observe_screen
+from perception.vision import detect_clickables
 from google.genai import types
 
 state["goal"] = input(">> ")
@@ -15,7 +16,7 @@ contents = [
 
 observation = ""
 
-MAX_TURNS = 10
+MAX_TURNS = 20
 turns = 0
 
 while True and turns < MAX_TURNS:
@@ -48,32 +49,23 @@ while True and turns < MAX_TURNS:
     print(f"Result: {result}\n-----------\n")
 
     if result["type"] == "OBSERVE":
-        observation = observe_screen()
+        observation, image = observe_screen()
+        clickables = detect_clickables(image)
         
         contents.append(
             types.Content(
                 role="user",
-                parts=[types.Part(text=f"SCREEN OBSERVATION:\n{observation}")]
+                parts=[types.Part(text=f"""
+                        CONTENT ON SCREEN: {observation}
+                        ----------------------------------------
+                        
+                        {len(clickables)} clickable text elements detected
+                        CLICKABLE OPTIONS: {[c['text'] for c in clickables]}
+                """)]
             )
         )
-        print(f"--Observation--: {observation}")
+        print(f"--Clickables--: {clickables}")
 
     elif result["type"] == "DONE":
         print("DONE")
         break
-
-
-
-
-"""
-plan = {
-        "steps": [
-            {"action": "open_app", "app_name": "brave"},
-            {"action": "wait", "seconds": 2},
-            {"action": "move_mouse", "x": 500, "y": 60},
-            {"action": "click"},
-            {"action": "type", "text": "black holes"},
-            {"action": "press", "key": "enter"}
-        ]
-    }
-"""

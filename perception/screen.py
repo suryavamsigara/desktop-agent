@@ -39,4 +39,4 @@ def observe_screen() -> str:
     Visible text on screen:
     {text if text else "No readable text detected."}
     """
-    return observation
+    return observation, image

@@ -11,8 +11,11 @@ class TypeParams(BaseModel):
 class PressParams(BaseModel):
     key: str
 
+class HotkeyParams(BaseModel):
+    keys: list[str]
+
 class ClickParams(BaseModel):
-    target: Optional[str] = None
+    target: str
 
 class WaitParams(BaseModel):
     seconds: float

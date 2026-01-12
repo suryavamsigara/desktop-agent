@@ -20,7 +20,7 @@ def press_key(key: str):
     """Presses a single key (enter, tab, esc, etc..)"""
     pyautogui.press(key)
 
-def hot_key(*keys):
+def hot_key(keys: list[str]):
     """Presses a key combination"""
     pyautogui.hotkey(*keys)
 
