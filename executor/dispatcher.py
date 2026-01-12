@@ -12,33 +12,48 @@ ACTION_MAP = {
     "screenshot": screenshot,
 }
 
-def execute(plan):
+def execute_decision(decision):
     """
     Executes steps until observe
     """
+    if decision.action == "observe":
+        return {
+            "type": "OBSERVE",
+            "action": decision.action,
+            "status": "Observing"
+        }
+    if decision.action == "done":
+        return {
+            "type": "DONE",
+            "action": decision.action,
+            "status": "SUCCESS"
+        }
 
-    for step in plan.steps:
+    fn = ACTION_MAP[decision.action]
 
-        if step.action == "observe":
-            return "OBSERVE"
-        
-        if step.action not in ACTION_MAP:
-            raise ValueError(f"Blocked action: {step.action}")
-        
-        fn = ACTION_MAP[step.action]
+    try:
+        if decision.parameters is not None:
+            fn(**decision.parameters.model_dump())
+        else:
+            fn()
 
-        try:
-            if step.parameters is not None:
-                fn(**step.parameters.model_dump())
-            else:
-                fn()
+        feedback = {
+            "type": "ACTION_RESULT",
+            "action": decision.action,
+            "status": "SUCCESS",
+            "details": "Completed successfully"
+        }
 
-            state["last_action"] = step.action
-            state["history"].append(step.action)
-            state["current_step"] += 1
+        state["last_action"] = decision.action
+        state["history"].append(decision.action)
+        state["current_step"] += 1
+        return feedback
 
-        except Exception as e:
-            state["errors"] += 1
-            raise RuntimeError(f"Execution failed: {e}")
-        
-    return "DONE"
+    except Exception as e:
+        state["errors"] += 1
+        return {
+            "type": "ACTION_RESULT",
+            "action": decision.action,
+            "status": "error",
+            "details": str(e)
+        }

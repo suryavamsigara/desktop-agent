@@ -5,12 +5,7 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 from planner.state import state
-from planner.step import Step
-
-class Plan(BaseModel):
-    steps: list[Step]
-    description: Optional[str] = None
-
+from planner.step import Decision
 
 load_dotenv()
 
@@ -38,39 +33,30 @@ SYSTEM_PROMPT = """
     Output must strictly follow the JSON schema.
 """
 
-def create_plan(observation: str = "") -> Plan:
+def next_decision(contents: list[types.Content]) -> Decision:
     """
     Ask LLM what to do next based on goal + observation
     """
 
-    user_prompt = f"""
-        GOAL: {state["goal"]}
-
-        ALREADY EXECUTED ACTIONS:
-        {state["history"]}
-        
-        LAST OBSERVATION: {observation if observation else None}
-
-        What should be done next?
-    """
-
     response = client.models.generate_content(
         model="gemini-2.5-flash-lite",
-        contents=[
-            types.Content(
-                role="user",
-                parts=[types.Part(text=user_prompt)]
-            )
-        ],
+        contents=contents,
         config={
             "system_instruction": SYSTEM_PROMPT,
             "response_mime_type": "application/json",
-            "response_json_schema": Plan.model_json_schema(),
+            "response_json_schema": Decision.model_json_schema(),
         },
     )
 
+    contents.append(
+        types.Content(
+            role="model",
+            parts=[types.Part(text=response.text)]
+        )
+    )
+
     try:
-        return Plan.model_validate_json(response.text)
+        return Decision.model_validate_json(response.text)
     except Exception as e:
         raise ValueError(f"Invalid plan from LLM: {e}")
     
