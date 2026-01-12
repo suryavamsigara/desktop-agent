@@ -8,6 +8,7 @@ ACTION_MAP = {
     "hotkey": hot_key,
     "move_mouse": move_mouse,
     "click": click_mouse,
+    "scroll": scroll,
     "open_app": open_app,
     "screenshot": screenshot,
     "semantic_click": semantic_click,

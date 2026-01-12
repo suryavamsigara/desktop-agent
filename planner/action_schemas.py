@@ -17,5 +17,8 @@ class HotkeyParams(BaseModel):
 class ClickParams(BaseModel):
     target: str
 
+class ScrollParams(BaseModel):
+    amount: int
+
 class WaitParams(BaseModel):
     seconds: float

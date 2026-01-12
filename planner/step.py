@@ -7,6 +7,7 @@ from planner.action_schemas import (
     PressParams,
     HotkeyParams,
     ClickParams,
+    ScrollParams,
     WaitParams,
 )
 
@@ -17,6 +18,7 @@ class Decision(BaseModel):
         "press",
         "hotkey",
         "click",
+        "scroll",
         "wait",
         "observe",
         "done"
@@ -28,6 +30,7 @@ class Decision(BaseModel):
         PressParams,
         HotkeyParams,
         ClickParams,
+        ScrollParams,
         WaitParams,
         None,
     ]] = None
@@ -54,6 +57,10 @@ class Decision(BaseModel):
         if self.action == "click":
             if not isinstance(self.parameters, ClickParams):
                 raise ValueError("click requires ClickParams with target")
+        
+        if self.action == "scroll":
+            if not isinstance(self.parameters, ScrollParams):
+                raise ValueError("scroll requires ScrollParams(amount)")
 
         if self.action in ("observe", "done") and self.parameters is not None:
             raise ValueError(f"{self.action} must not have parameters")

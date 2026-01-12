@@ -32,6 +32,7 @@ SYSTEM_PROMPT = """
     - Wait after every action
 
     You MUST ALWAYS include a short "thought" describing what you're doing. The thought must be one sentence.
+    You can press win to search for apps.
 
 
     VALID FORMAT (EXAMPLE):
@@ -43,7 +44,7 @@ SYSTEM_PROMPT = """
     }
 
     Allowed actions:
-    open_app, type, press, hotkey, click, wait, observe
+    open_app, type, press, hotkey, click, scroll, wait, observe
 
     - observe shouldn't have parameters
     - parameters for click is 'target'
