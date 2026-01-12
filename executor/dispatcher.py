@@ -10,6 +10,7 @@ ACTION_MAP = {
     "click": click_mouse,
     "open_app": open_app,
     "screenshot": screenshot,
+    "semantic_click": semantic_click,
 }
 
 def execute_decision(decision):
@@ -20,40 +21,59 @@ def execute_decision(decision):
         return {
             "type": "OBSERVE",
             "action": decision.action,
-            "status": "Observing"
+            "status": "Observing",
+            "details": "Started observing"
         }
+    
     if decision.action == "done":
         return {
             "type": "DONE",
             "action": decision.action,
-            "status": "SUCCESS"
+            "status": "SUCCESS",
+            "details": "Goal completed"
         }
 
-    fn = ACTION_MAP[decision.action]
-
-    try:
-        if decision.parameters is not None:
-            fn(**decision.parameters.model_dump())
+    if decision.action == "click":
+        if decision.parameters.target:
+            semantic_click(decision.parameters.target)
         else:
-            fn()
-
-        feedback = {
+            pyautogui.click(
+                decision.parameters.x,
+                decision.parameters.y
+            )
+        return {
             "type": "ACTION_RESULT",
             "action": decision.action,
             "status": "SUCCESS",
             "details": "Completed successfully"
-        }
+            }
+    else:
 
-        state["last_action"] = decision.action
-        state["history"].append(decision.action)
-        state["current_step"] += 1
-        return feedback
+        fn = ACTION_MAP[decision.action]
 
-    except Exception as e:
-        state["errors"] += 1
-        return {
-            "type": "ACTION_RESULT",
-            "action": decision.action,
-            "status": "error",
-            "details": str(e)
-        }
+        try:
+            if decision.parameters is not None:
+                fn(**decision.parameters.model_dump())
+            else:
+                fn()
+
+            feedback = {
+                "type": "ACTION_RESULT",
+                "action": decision.action,
+                "status": "SUCCESS",
+                "details": "Completed successfully"
+            }
+
+            state["last_action"] = decision.action
+            state["history"].append(decision.action)
+            state["current_step"] += 1
+            return feedback
+
+        except Exception as e:
+            state["errors"] += 1
+            return {
+                "type": "ACTION_RESULT",
+                "action": decision.action,
+                "status": "error",
+                "details": str(e)
+            }

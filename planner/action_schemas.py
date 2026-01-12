@@ -12,8 +12,6 @@ class PressParams(BaseModel):
     key: str
 
 class ClickParams(BaseModel):
-    x: Optional[int] = None
-    y: Optional[int] = None
     target: Optional[str] = None
 
 class WaitParams(BaseModel):

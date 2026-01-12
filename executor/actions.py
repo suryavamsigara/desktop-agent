@@ -1,7 +1,10 @@
 import os
 import sys
 import time
+import subprocess
 import pyautogui
+from perception.screen import take_screenshot
+from perception.vision import find_text_position
 
 # Keyboard actions
 
@@ -23,6 +26,17 @@ def hot_key(*keys):
 
 
 # Mouse actions
+
+def semantic_click(target: str):
+    image = take_screenshot()
+    pos = find_text_position(target, image)
+
+    if pos is None:
+        raise RuntimeError(f"Could not find target '{target}' on screen")
+    
+    x, y = pos
+    pyautogui.moveTo(x, y, duration=0.2)
+    pyautogui.click()
 
 def move_mouse(x: int, y: int, duration: float = 0.2):
     """Move mouse to absolute screen positino"""
@@ -54,8 +68,22 @@ def open_app(app_name: str):
     """
     Opens an application
     """
+    app = app_name.lower()
+
+    if app in ["explorer", "file explorer", "files"]:
+        subprocess.Popen(["explorer"])
+        return
+    
+    if app in ["settings", "windows settings"]:
+        subprocess.Popen(["cmd", "/c", "start", "ms-settings:"])
+        return
+    
+    if app in ["control panel"]:
+        subprocess.Popen(["control"])
+        return
     try:
         os.startfile(app_name)
+        return
     except Exception as e:
         raise RuntimeError(f"Failed to open app '{app_name}': {e}")
 
