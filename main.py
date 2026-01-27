@@ -4,8 +4,11 @@ from agent_orchestrator import next_decision
 from perception.screen import observe_screen
 from perception.vision import detect_clickables
 from google.genai import types
+from telegram_bot import main
 
-state["goal"] = input(">> ")
+# state["goal"] = input(">> ")
+
+main()
 
 contents = [
     types.Content(

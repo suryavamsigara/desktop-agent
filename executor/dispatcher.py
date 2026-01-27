@@ -15,9 +15,6 @@ ACTION_MAP = {
 }
 
 def execute_decision(decision):
-    """
-    Executes steps until observe
-    """
     if decision.action == "observe":
         return {
             "type": "OBSERVE",
