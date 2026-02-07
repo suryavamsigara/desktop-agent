@@ -1,6 +1,4 @@
-import time
 import pytesseract
-import pyautogui
 from PIL import Image
 
 pytesseract.pytesseract.tesseract_cmd = (
