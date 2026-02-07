@@ -7,6 +7,7 @@ from planner.state import state
 from planner.step import Decision
 from executor.dispatcher import execute_tool
 from executor.tools_list import tools
+from logs.action_log import ActionLog
 
 load_dotenv()
 
@@ -56,8 +57,22 @@ SYSTEM_PROMPT = """
     Any violation of the format is incorrect.
 """
 
+def extract_final_text(text: str) -> str:
+    start_tag = "[FINAL ANSWER]"
+    end_tag = "[/FINAL ANSWER]"
+
+    if start_tag in text:
+        start = text.find(start_tag) + len(start_tag)
+        end = text.find(end_tag, start)
+        if end == -1:
+            return text[start:].strip()
+        return text[start:end].strip()
+    return text.strip()
+
 
 def run_agent(user_query: str, max_turns=5):
+    log = ActionLog(goal=user_query)
+
     messages = [
         {
             "role": "system",
@@ -76,9 +91,9 @@ def run_agent(user_query: str, max_turns=5):
     for turn in range(max_turns):
         print(f"\n──── Turn {turn+1} ────")
 
-        print("Messages so far:")
-        print(json.dumps(messages, indent=2, default=str))
-        print("=" * 60)
+        # print("Messages so far:")
+        # print(json.dumps(messages, indent=2, default=str))
+        # print("=" * 60)
 
         response = client.chat.completions.create(
             model="deepseek-reasoner",
@@ -109,23 +124,17 @@ def run_agent(user_query: str, max_turns=5):
             clean_message["reasoning_content"] = message.reasoning_content
 
         messages.append(clean_message)
-        print("*"*60)
-        print(message)
-        print("*"*50)
+        # print("*"*60)
+        # print(message)
+        # print("*"*50)
 
         if message.content and "[FINAL ANSWER]" in message.content:
-            # Extract the final answer and return
-            start = message.content.find("[FINAL ANSWER]")
-            end = message.content.find("[/FINAL ANSWER]", start)
-
-            if end == -1:
-                end = len(message.content)
-            else:
-                end += len("[/FINAL ANSWER]")
-            
-            final = message.content[start:end].strip()
+            final_text = extract_final_text(message.content)
             print("\n Final answer found.")
-            print(final)
+            print(final_text)
+
+            # Log the final answer in action_log.json
+            log.log_final(final_text)
             return
         
         if not message.tool_calls:
@@ -134,6 +143,14 @@ def run_agent(user_query: str, max_turns=5):
 
         for tool_call in message.tool_calls:
             tool_result = execute_tool(tool_call)
+
+            # Logging the tool in action_log.json
+            log.log_tool(
+                name=tool_call.function.name,
+                tool_input=tool_call.function.arguments,
+                tool_output=tool_result
+            )
+
             print(f"-> {tool_call.function.name} -> {tool_result}")
 
             messages.append(
@@ -159,7 +176,7 @@ def run_agent(user_query: str, max_turns=5):
 
 
 
-run_agent("Open notepad")
+run_agent("open notepad")
 
 
 

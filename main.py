@@ -1,12 +1,12 @@
 from planner.state import state
 from executor.dispatcher import execute_decision
-from agent_orchestrator import next_decision
+from agent_orchestrator import next_decision, run_agent
 from perception.screen import observe_screen
 from perception.vision import detect_clickables
 from google.genai import types
 from telegram_bot import main
 
-# state["goal"] = input(">> ")
+goal = input(">> ")
 
 # main()
 
@@ -49,8 +49,6 @@ while True and turns < MAX_TURNS:
         )
     )
 
-    print(f"Result: {result}\n-----------\n")
-
     if result["type"] == "OBSERVE":
         observation, image = observe_screen()
         clickables = detect_clickables(image)
@@ -67,7 +65,6 @@ while True and turns < MAX_TURNS:
                 """)]
             )
         )
-        print(f"--Clickables--: {clickables}")
 
     elif result["type"] == "DONE":
         print("DONE")
