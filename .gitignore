@@ -3,3 +3,4 @@ __pycache__
 .env
 screenshots
 test.py
+logs/action_log.json
