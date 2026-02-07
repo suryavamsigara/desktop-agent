@@ -22,6 +22,11 @@ observation = ""
 MAX_TURNS = 20
 turns = 0
 
+
+run_agent(user_query=goal, max_turns=20)
+
+
+
 while True and turns < MAX_TURNS:
     turns += 1
 

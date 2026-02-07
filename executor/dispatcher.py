@@ -2,6 +2,7 @@ import json
 from typing import Any
 from .actions import *
 from planner import state
+from perception.screen import observe_screen
 
 ACTION_MAP = {
     "wait": wait,
@@ -118,6 +119,9 @@ def execute_tool(tool_call: Any):
 
         elif func_name == "screenshot":
             return screenshot(**args)
+        
+        elif func_name == "observe_screen":
+            return observe_screen()
         
         elif func_name == "abort":
             return abort()

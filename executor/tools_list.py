@@ -213,5 +213,18 @@ tools = [
                 "required": []
             }
         }
+    },
+
+    {
+        "type": "function",
+        "function": {
+            "name": "observe_screen",
+            "description": "Observe the current screen, extract visible text, and clickable elements using OCR, and return a human readable description of what is on the screen.",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
     }
 ]

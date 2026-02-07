@@ -70,7 +70,7 @@ def extract_final_text(text: str) -> str:
     return text.strip()
 
 
-def run_agent(user_query: str, max_turns=5):
+def run_agent(user_query: str, max_turns=20):
     log = ActionLog(goal=user_query)
 
     messages = [
@@ -80,7 +80,8 @@ def run_agent(user_query: str, max_turns=5):
             
             Call **only one tool at a time** unless they are clearly independent and parallel.
             Use the exact format for tool calls.
-            After executing a tool, observe the result.
+            After executing a tool, decide based on the result.
+            Observe after everytime screen changes.
             If the user's request is now fully satisfied, immediately output the final answer wrapped in [FINAL ANSWER]…[/FINAL ANSWER].
             Do not continue calling tools unnecessarily.
             """
@@ -148,7 +149,7 @@ def run_agent(user_query: str, max_turns=5):
             log.log_tool(
                 name=tool_call.function.name,
                 tool_input=tool_call.function.arguments,
-                tool_output=tool_result
+                tool_output=tool_result if len(tool_result) < 100 else tool_result[:100]
             )
 
             print(f"-> {tool_call.function.name} -> {tool_result}")
@@ -176,7 +177,7 @@ def run_agent(user_query: str, max_turns=5):
 
 
 
-run_agent("just press win key")
+run_agent("open youtube on brave")
 
 
 
