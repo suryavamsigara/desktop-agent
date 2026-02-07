@@ -2,10 +2,11 @@ import os
 import json
 from openai import OpenAI
 from dotenv import load_dotenv
-from google import genai
 from google.genai import types
 from planner.state import state
 from planner.step import Decision
+from executor.dispatcher import execute_tool
+from executor.tools_list import tools
 
 load_dotenv()
 
@@ -55,6 +56,138 @@ SYSTEM_PROMPT = """
     Any violation of the format is incorrect.
 """
 
+
+def run_agent(user_query: str, max_turns=5):
+    messages = [
+        {
+            "role": "system",
+            "content": """You are an automation agent.
+            
+            Call **only one tool at a time** unless they are clearly independent and parallel.
+            Use the exact format for tool calls.
+            After executing a tool, observe the result.
+            If the user's request is now fully satisfied, immediately output the final answer wrapped in [FINAL ANSWER]…[/FINAL ANSWER].
+            Do not continue calling tools unnecessarily.
+            """
+        },
+        {"role": "user", "content": user_query},
+    ]
+
+    for turn in range(max_turns):
+        print(f"\n──── Turn {turn+1} ────")
+
+        print("Messages so far:")
+        print(json.dumps(messages, indent=2, default=str))
+        print("=" * 60)
+
+        response = client.chat.completions.create(
+            model="deepseek-reasoner",
+            messages=messages,
+            tools=tools,
+            tool_choice="auto",
+            temperature=0.3,
+            max_tokens=200, # 4096
+        )
+
+        message = response.choices[0].message
+
+        if hasattr(message, "reasoning_content") and message.reasoning_content:
+            print(f"Reasoning: ", message.reasoning_content.strip())
+        
+        if message.content:
+            print("Content: ", message.content.strip())
+        
+        clean_message = {
+            "role": message.role
+        }
+
+        if message.content is not None:
+            clean_message["content"] = message.content
+        if message.tool_calls:
+            clean_message["tool_calls"] = message.tool_calls
+        if hasattr(message, "reasoning_content") and message.reasoning_content:
+            clean_message["reasoning_content"] = message.reasoning_content
+
+        messages.append(clean_message)
+        print("*"*60)
+        print(message)
+        print("*"*50)
+
+        if message.content and "[FINAL ANSWER]" in message.content:
+            # Extract the final answer and return
+            start = message.content.find("[FINAL ANSWER]")
+            end = message.content.find("[/FINAL ANSWER]", start)
+
+            if end == -1:
+                end = len(message.content)
+            else:
+                end += len("[/FINAL ANSWER]")
+            
+            final = message.content[start:end].strip()
+            print("\n Final answer found.")
+            print(final)
+            return
+        
+        if not message.tool_calls:
+            print("No tool calls and no [FINAL ANSWER]")
+            return message.content.strip() if message.content else "Completed"
+
+        for tool_call in message.tool_calls:
+            tool_result = execute_tool(tool_call)
+            print(f"-> {tool_call.function.name} -> {tool_result}")
+
+            messages.append(
+                {
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "name": tool_call.function.name,
+                    "content": tool_result,
+                }
+            )
+        
+
+    print(f"\nReached max turns ({max_turns}) without final answer.")
+    return "Max turns reached. Last model message:\n" + (message.content or "")
+
+
+
+
+
+
+
+
+
+
+
+run_agent("Open notepad")
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
 def convert_contents(contents):
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT}
@@ -103,4 +236,3 @@ def next_decision(contents: list[types.Content]) -> Decision:
         return Decision.model_validate(data)
     except Exception as e:
         raise ValueError(f"Invalid plan from LLM: {e}")
-    

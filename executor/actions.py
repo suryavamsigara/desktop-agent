@@ -11,18 +11,22 @@ from perception.vision import find_text_position
 def wait(seconds: float):
     """Pauses execution"""
     time.sleep(seconds)
+    return f"Waited for {seconds} seconds"
 
 def type_text(text: str, interval: float = 0.05):
     """Types text like a human"""
     pyautogui.write(text, interval=interval)
+    return f"Typed"
     
 def press_key(key: str):
     """Presses a single key (enter, tab, esc, etc..)"""
     pyautogui.press(key)
+    return f"Pressed {key} key."
 
 def hot_key(keys: list[str]):
     """Presses a key combination"""
     pyautogui.hotkey(*keys)
+    return f"Pressed"
 
 
 # Mouse actions
@@ -37,10 +41,12 @@ def semantic_click(target: str):
     x, y = pos
     pyautogui.moveTo(x, y, duration=0.2)
     pyautogui.click()
+    return f"Clicked"
 
 def move_mouse(x: int, y: int, duration: float = 0.2):
     """Move mouse to absolute screen positino"""
     pyautogui.moveTo(x, y, duration=duration)
+    return f"Moved to ({x}, {y})"
 
 def click_mouse(x: int=None, y: int=None, button: str="left"):
     """
@@ -51,6 +57,7 @@ def click_mouse(x: int=None, y: int=None, button: str="left"):
         pyautogui.click(x, y, button=button)
     else:
         pyautogui.click(button=button)
+    return f"Clicked"
     
 def double_click(x: int=None, y: int=None):
     """Double click"""
@@ -58,9 +65,11 @@ def double_click(x: int=None, y: int=None):
         pyautogui.doubleClick(x, y)
     else:
         pyautogui.doubleClick()
+    return "Clicked"
 
 def scroll(amount: int):
     pyautogui.scroll(amount)
+    return "Scrolled"
 
 # Application actions
 

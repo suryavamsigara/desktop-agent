@@ -1,3 +1,5 @@
+import json
+from typing import Any
 from .actions import *
 from planner import state
 
@@ -69,3 +71,57 @@ def execute_decision(decision):
                 "status": "error",
                 "details": str(e)
             }
+
+
+
+
+
+
+def execute_tool(tool_call: Any):
+    """
+    Executes one tool call and return its string result / error message
+    
+    :param tool_call: function
+    :type tool_call: Any
+    """
+    func_name = tool_call.function.name
+    args = json.loads(tool_call.function.arguments)
+
+    try:
+        if func_name == "wait":
+            seconds = float(args.get("seconds", 0))
+            return wait(seconds)
+        
+        elif func_name == "type_text":
+            return type_text(**args)
+
+        elif func_name == "press_key":
+            return press_key(**args)
+
+        elif func_name == "hot_key":
+            return hot_key(**args)
+
+        elif func_name == "semantic_click":
+            return semantic_click(**args)
+        
+        elif func_name == "move_mouse":
+            return move_mouse(**args)
+        
+        elif func_name == "click_mouse":
+            return click_mouse(**args)
+
+        elif func_name == "double_click":
+            return double_click(**args)
+        
+        elif func_name == "scroll":
+            return scroll(**args)
+
+        elif func_name == "screenshot":
+            return screenshot(**args)
+        
+        elif func_name == "abort":
+            return abort()
+
+    except Exception as e:
+        return f"Error in {func_name}: {str(e)}"
+    

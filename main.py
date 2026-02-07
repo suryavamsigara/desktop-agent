@@ -8,7 +8,7 @@ from telegram_bot import main
 
 # state["goal"] = input(">> ")
 
-main()
+# main()
 
 contents = [
     types.Content(
