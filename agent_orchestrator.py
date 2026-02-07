@@ -176,7 +176,7 @@ def run_agent(user_query: str, max_turns=5):
 
 
 
-run_agent("open notepad")
+run_agent("just press win key")
 
 
 
