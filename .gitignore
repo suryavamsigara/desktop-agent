@@ -4,3 +4,7 @@ __pycache__
 screenshots
 test.py
 logs/action_log.json
+test3.py
+mcp_server_test
+playwright-mcp.py
+agent_orchestrator2.py

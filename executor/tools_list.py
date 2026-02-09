@@ -228,3 +228,75 @@ tools = [
         }
     }
 ]
+
+browser_tools = [
+    {
+        "type": "function",
+        "function": {
+            "name": "browser_navigate",
+            "description": "Navigate the browser to a URL.",
+            "parameters": {
+                "type": "object",
+                "properties": {"url": {"type": "string"}},
+                "required": ["url"]
+            }
+        }
+    },
+
+    {
+        "type": "function",
+        "function": {
+            "name": "browser_get_tree",
+            "description": "Get the text/UI structure of the current web page. USE THIS OFTEN to see where you are.",
+            "parameters": {"type": "object", "properties": {}}
+        }
+    },
+
+    {
+        "type": "function",
+        "function": {
+            "name": "browser_click",
+            "description": "Click an element on the web page using its semantic Name/Role.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "role": {"type": "string", "description": "ARIA role (link, button, etc.)"},
+                    "name": {"type": "string", "description": "The text on the element"},
+                    "selector": {"type": "string", "description": "CSS selector fallback"}
+                }
+            }
+        }
+    },
+
+    {
+        "type": "function",
+        "function": {
+            "name": "browser_type",
+            "description": "Type text into a web input field.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "value": {"type": "string"},
+                    "label": {"type": "string", "description": "The visible label of the input"},
+                    "selector": {"type": "string"}
+                },
+                "required": ["value"]
+            }
+        }
+    },
+
+    {
+        "type": "function",
+        "function": {
+            "name": "browser_scroll",
+            "description": "Scroll the web page.",
+            "parameters": {
+                "type": "object",
+                "properties": {"direction": {"type": "string", "enum": ["up", "down"]}},
+                "required": ["direction"]
+            }
+        }
+    }
+]
+
+tools.extend(browser_tools)

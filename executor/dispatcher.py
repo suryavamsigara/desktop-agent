@@ -1,9 +1,10 @@
 import json
 from typing import Any
 from .actions import *
+from .browser_manager import *
 from perception.screen import observe_screen
 
-def execute_tool(tool_call: Any):
+async def execute_tool(tool_call: Any):
     """
     Executes one tool call and return its string result / error message
     
@@ -14,7 +15,26 @@ def execute_tool(tool_call: Any):
     args = json.loads(tool_call.function.arguments)
 
     try:
-        if func_name == "wait":
+        # Browser tools (Async)
+
+        if func_name == "browser_navigate":
+            return await browser_navigate(**args)
+
+        elif func_name == "browser_get_tree":
+            return await browser_get_tree(**args)
+        
+        elif func_name == "browser_click":
+            return await browser_click(**args)
+        
+        elif func_name == "browser_type":
+            return await browser_type(**args)
+        
+        elif func_name == "browser_scroll":
+            return await browser_scroll(**args)
+
+        # Desktop tools (Sync)
+
+        elif func_name == "wait":
             seconds = float(args.get("seconds", 0))
             return wait(seconds)
         
