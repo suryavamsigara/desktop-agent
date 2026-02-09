@@ -5,6 +5,14 @@ import pyautogui
 from perception.screen import take_screenshot
 from perception.vision import find_text_position
 
+def ask_user(question: str) -> str:
+    """
+    Pauses execution and asks the user for input.
+    """
+    print(f"\n[Sentinel Asking]: {question}")
+    answer = input("Answer: ")
+    return f"User replied: {answer}"
+
 # Keyboard actions
 
 def wait(seconds: float):

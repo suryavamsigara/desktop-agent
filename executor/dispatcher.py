@@ -68,6 +68,9 @@ async def execute_tool(tool_call: Any):
         elif func_name == "observe_screen":
             return observe_screen()
         
+        elif func_name == "ask_user":
+            return ask_user(**args)
+        
         elif func_name == "abort":
             return abort()
 

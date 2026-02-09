@@ -226,6 +226,24 @@ tools = [
                 "required": []
             }
         }
+    },
+
+    {
+        "type": "function",
+        "function": {
+            "name": "ask_user",
+            "description": "Ask the user a question to get missing information, credentials, confirmation, or anything. The script will PAUSE until the user replies.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "question": {
+                        "type": "string",
+                        "description": "The question to ask the user (e.g. 'I see a login screen. What is the username?')"
+                    }
+                },
+                "required": ["question"]
+            }
+        }
     }
 ]
 
