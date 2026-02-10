@@ -28,6 +28,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     
     user_id = update.effective_user.id
+    chat_id = update.effective_chat.id
     user_text = update.message.text
 
     # 1. Handle Replies (Agent asking a question)
@@ -48,6 +49,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "is_waiting": False,
         "input_event": asyncio.Event(),
         "last_reply": None,
+        "chat_id": chat_id,
         "task": None
     }
 
@@ -85,7 +87,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not USER_SESSIONS[user_id]["is_running"]:
             raise asyncio.CancelledError("Stopped by user")
         
-        await context.bot.send_chat_action(chat_id=update.effective_chat.id, action="typing")
+        session = USER_SESSIONS[user_id]
+        chat_id = session["chat_id"]
+        
+        await context.bot.send_chat_action(chat_id=chat_id, action="typing")
 
         if "Thinking..." in text: return
         
@@ -99,16 +104,28 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     async def telegram_input(question: str):
         """Ask user and wait for reply."""
-        USER_SESSIONS[user_id]["is_waiting"] = True
-        USER_SESSIONS[user_id]["input_event"].clear()
+        session = USER_SESSIONS[user_id]
+        chat_id = session["chat_id"]
 
-        await update.message.reply_text(f"🔴 <b>QUESTION:</b> {question}\n(Reply to this message)", parse_mode=ParseMode.HTML)
+        session["is_waiting"] = True
+        session["input_event"].clear()
 
-        # Wait for reply
-        await USER_SESSIONS[user_id]["input_event"].wait()
+        try:
+            await context.bot.send_message(
+                chat_id=chat_id,
+                text=f"🔴 <b>QUESTION:</b> {question}\n(Reply to this message)",
+                parse_mode=ParseMode.HTML
+            )
+        except Exception as e:
+            print(f"Failed to send question: {e}")
+            session["is_waiting"] = False
+            return "Error: could not ask question"
         
-        USER_SESSIONS[user_id]["is_waiting"] = False
-        return USER_SESSIONS[user_id]["last_reply"]
+        # Wait for reply
+        await session["input_event"].wait()
+        
+        session["is_waiting"] = False
+        return session.get("last_reply", "No reply received")
 
 def run_telegram_bot():
     TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
