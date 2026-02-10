@@ -2,6 +2,39 @@ tools = [
     {
         "type": "function",
         "function": {
+            "name": "get_accessibility_tree",
+            "description": "Scan the active window to see buttons and text fields. Returns a list of elements you can click.",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "click_element",
+            "description": "Click a button or field found in the accessibility tree.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "The EXACT name of the element (e.g. 'File', 'Save')."
+                    },
+                    "control_type": {
+                        "type": "string",
+                        "description": "Optional: The type (e.g. 'Button', 'MenuItem') for better accuracy."
+                    }
+                },
+                "required": ["name"]
+            }
+        }
+    },
+
+    {
+        "type": "function",
+        "function": {
             "name": "wait",
             "description": "Pauses execution for the specified number of seconds.",
             "parameters": {
@@ -81,7 +114,7 @@ tools = [
         "type": "function",
         "function": {
             "name": "semantic_click",
-            "description": "Locates text on the screen using OCR/image processing and clicks on it. Raises error if text not found.",
+            "description": "Locates text on the screen using OCR/image processing and clicks on it. Use this only if other methods didn't work",
             "parameters": {
                 "type": "object",
                 "properties": {

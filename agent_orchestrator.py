@@ -60,7 +60,7 @@ async def run_agent(user_query: str,
             
             1. **CONTEXT MATTERS:**
                - If the task is inside a website, use `browser_*` tools (Playwright).
-               - If the task is on the Windows Desktop (File Explorer, Settings, Spotify,....), use Desktop tools (`click_mouse`, `open_app`).
+               - If the task is on the Windows Desktop (File Explorer, Settings, Spotify,....), use Desktop tools.
 
             2. **INTERACTIVE HELP:**
                - **NEVER GUESS** credentials, file paths, or ambiguous details.
@@ -155,7 +155,7 @@ async def run_agent_telegram(
             
             1. **CONTEXT MATTERS:**
                - If the task is inside a website, use `browser_*` tools (Playwright).
-               - If the task is on the Windows Desktop (File Explorer, Settings, Spotify,....), use Desktop tools (`click_mouse`, `open_app`).
+               - If the task is on the Windows Desktop (File Explorer, Settings, Spotify,....), use Desktop tools.
 
             2. **INTERACTIVE HELP:**
                - **NEVER GUESS** credentials, file paths, or ambiguous details.
@@ -165,6 +165,11 @@ async def run_agent_telegram(
             3. **BROWSER RULES:**
                - Always use `browser_get_tree` after navigating to see the page.
                - Prefer `browser_click` (semantic) over `click_mouse` (coordinates) when inside the browser.
+
+            4. **DESKTOP RULES:**
+               - You can open apps by clicking win and typing the app name, then enter.
+               - Get accessibility tree OFTEN to see what to click.
+               - DO NOT spam key presses.
             
             4. **GENERAL:**
                - Call one tool at a time.

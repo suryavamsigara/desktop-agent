@@ -2,6 +2,7 @@ import json
 from typing import Any
 from .actions import *
 from .browser_manager import *
+from .desktop_manager import *
 from perception.screen import observe_screen
 
 async def execute_tool(tool_call: Any):
@@ -73,6 +74,12 @@ async def execute_tool(tool_call: Any):
         
         elif func_name == "ask_user":
             return ask_user(**args)
+        
+        elif func_name == "get_accessibility_tree":
+            return get_accessibility_tree(**args)
+        
+        elif func_name == "click_element":
+            return click_element(**args)
         
         elif func_name == "abort":
             return abort()
