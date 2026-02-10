@@ -69,7 +69,7 @@ async def run_agent(user_query: str,
                - Prefer `browser_click` (semantic) over `click_mouse` (coordinates) when inside the browser.
                - If you fail to click an option inside a dropdown, try clicking the dropdown first, then sending the 'ArrowDown' and 'Enter' keys using the press_key tool.
                - Open through browser navigate
-               - *If a tool fails*, you **must** get the browser tree to see what happened and what to do.
+               - *If a tool fails*, you **must** get the browser tree to see what happened and what to do, and whether it really failed.
 
             4. **DESKTOP RULES:**
                - You can open apps other than browsers by clicking win and typing the app name, then enter.
@@ -125,6 +125,11 @@ async def run_agent(user_query: str,
 
                 await output_handler(f"✅ Result: {str(tool_result)[:100]}...")
 
+                MAX_LEN = 50000
+
+                if len(tool_result) > MAX_LEN:
+                    tool_result = tool_result[:MAX_LEN] +"\n...[Output truncated due to length]..."
+
                 log.log_tool(
                     name=tool_call.function.name,
                     tool_input=tool_call.function.arguments,
@@ -173,7 +178,7 @@ async def run_agent_telegram(
                - Prefer `browser_click` (semantic) over `click_mouse` (coordinates) when inside the browser.
                - Before clicking hot keys (ctrl+a/backspace), make sure the focus is on the area to prevent deleting something else.
                - Open through browser navigate
-               - *If a tool fails*, you **must** get the browser tree to see what happened and what to do.
+               - If a tool/method fails, you **MUST** get the browser tree to see what happened, what to do, and whether it really failed.
 
             4. **DESKTOP RULES:**
                - You can open apps other than browsers by clicking win and typing the app name, then enter.
