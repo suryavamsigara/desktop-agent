@@ -54,31 +54,46 @@ async def browser_get_tree():
 
 async def browser_click(role: str = None, name: str = None, selector: str = None):
     """
-    Clicks an element using semantic role/name or CSS selector
+    Tries normal click -> Force click -> JS Click.
     """
     session = await _ensure_session()
     page = session["page"]
+    
     try:
+        target = None
         if role and name:
-            await page.get_by_role(role, name=name).click()
-            return f"Clicked {role} '{name}'"
+            target = page.get_by_role(role, name=name).first
         elif selector:
-            await page.click(selector)
-            return f"Clicked selector '{selector}'"
+            target = page.locator(selector).first
         else:
-            return f"Error: Provide (role+name) or selector"
+            return "Error: Provide (role+name) or selector"
+
+        try:
+            await target.highlight()
+        except:
+            pass
+        try:
+            await target.click(timeout=2000)
+            return f"✅ Clicked {name or selector}"
+        except Exception as e:
+            print(f"Standard click failed ({e}), escalating...")
+        try:
+            await target.click(force=True, timeout=2000)
+            return f"Force-clicked {name or selector}"
+        except Exception as e:
+            print(f"Force click failed ({e}), escalating to JS...")
+
+        await target.evaluate("element => element.click()")
+        return f"JS-clicked {name or selector}"
+
     except Exception as e:
-        return f"Click failed: {e}"
+        return f"❌ All click methods failed: {e}"
 
 async def browser_type(value: str, label: str = None, selector: str = None, role: str = None, name: str = None):
-    """
-    Types into a field. Supports Label, Selector, OR Role+Name (e.g. role="combobox", name="Search").
-    """
     session = await _ensure_session()
     page = session["page"]
     try:
         target = None
-        
         if role and name:
             target = page.get_by_role(role, name=name).first
         elif label:
@@ -87,13 +102,12 @@ async def browser_type(value: str, label: str = None, selector: str = None, role
             target = page.locator(selector).first
         
         if not target:
-            return "Error: You must provide (role+name), 'label', or 'selector'."
-
-        await target.click()
-        await target.fill(value)
-        await page.keyboard.press("Enter")
+            return "Error: Target not found."
+        await target.click(force=True)
+        await target.press_sequentially(value, delay=50) 
         
-        return f"Typed '{value}' into {name or label or selector} and clicked enter."
+        await page.keyboard.press("Enter")
+        return f"Typed '{value}'"
     except Exception as e:
         return f"Typing failed: {str(e)}"
 

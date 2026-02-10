@@ -28,10 +28,7 @@ async def default_input_handler(question: str) -> str:
 import re
 
 def extract_final_text(text: str) -> str:
-    """
-    Extracts text inside [FINAL ANSWER]...[/FINAL ANSWER]
-    """
-    pattern = r"(?:^|\n)\[FINAL ANSWER\]"
+    pattern = r"(?i)(?:^|\n)\s*\[FINAL ANSWER\]"
     
     match = re.search(pattern, text)
     
@@ -71,12 +68,21 @@ async def run_agent(user_query: str,
                - Always use `browser_get_tree` after navigating to see the page.
                - Prefer `browser_click` (semantic) over `click_mouse` (coordinates) when inside the browser.
                - If you fail to click an option inside a dropdown, try clicking the dropdown first, then sending the 'ArrowDown' and 'Enter' keys using the press_key tool.
-            
+               - Open through browser navigate
+               - *If a tool fails*, you **must** get the browser tree to see what happened and what to do.
+
+            4. **DESKTOP RULES:**
+               - You can open apps other than browsers by clicking win and typing the app name, then enter.
+               - Get accessibility tree OFTEN to see what to click.
+               - DO NOT spam key presses.
+
             4. **GENERAL:**
                - Call one tool at a time.
                - If satisfied, return [FINAL ANSWER]...[/FINAL ANSWER].
                - If the user greets, talk and have a normal conversation.
                - Don't start to do anything if the user doesn't tell.
+
+            5.  To post on X/Twitter, you can click Post in the sidebar and write and post.
             """
         },
         {"role": "user", "content": user_query},
@@ -165,18 +171,23 @@ async def run_agent_telegram(
             3. **BROWSER RULES:**
                - Always use `browser_get_tree` after navigating to see the page.
                - Prefer `browser_click` (semantic) over `click_mouse` (coordinates) when inside the browser.
+               - Before clicking hot keys (ctrl+a/backspace), make sure the focus is on the area to prevent deleting something else.
+               - Open through browser navigate
+               - *If a tool fails*, you **must** get the browser tree to see what happened and what to do.
 
             4. **DESKTOP RULES:**
-               - You can open apps by clicking win and typing the app name, then enter.
+               - You can open apps other than browsers by clicking win and typing the app name, then enter.
                - Get accessibility tree OFTEN to see what to click.
                - DO NOT spam key presses.
             
-            4. **GENERAL:**
+            5. **GENERAL:**
                - Call one tool at a time.
                - If satisfied, return [FINAL ANSWER]...[/FINAL ANSWER].
                - Downloaded files are *automatically* sent to the user via telegram.
             
-            5. **Chatting:** If the user just says "Hi" or asks a general question, just reply naturally.
+            6. **Chatting:** If the user just says "Hi" or asks a general question, just reply naturally.
+
+            7.  To post on X/Twitter, you can click Post in the sidebar and write and post. Post should be very short because it has a character limit.
             """
         },
         {"role": "user", "content": user_query},
