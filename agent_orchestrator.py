@@ -1,6 +1,5 @@
 import os
 import json
-import asyncio
 from openai import AsyncOpenAI
 from dotenv import load_dotenv
 from executor.dispatcher import execute_tool
@@ -172,7 +171,20 @@ async def run_agent_telegram(
 
     await output_handler("Working on it..")
 
+    recent_actions_buffer = []
+    SUMMARY_INTERVAL = 5
+
     for turn in range(max_turns):
+        print(f"Thinking... (Turn {turn+1})")
+        if turn > 0 and turn % SUMMARY_INTERVAL == 0 and recent_actions_buffer:
+            history_text = "\n".join(recent_actions_buffer)
+
+            summary = await summarize_progress(history_text)
+
+            if summary:
+                await output_handler(f"📝 Update: {summary}")
+            
+            recent_actions_buffer = []
         response = await client.chat.completions.create(
             model="deepseek-chat",
             messages=messages,
@@ -200,6 +212,9 @@ async def run_agent_telegram(
             for tool_call in message.tool_calls:
                 func_name = tool_call.function.name
                 args = tool_call.function.arguments
+
+                recent_actions_buffer.append(f"Action: {func_name} {args}")
+
                 print(f"⚡ Executing: {func_name}")
 
                 if func_name == "ask_user":
@@ -208,6 +223,8 @@ async def run_agent_telegram(
                     tool_result = f"User replied: {user_reply}"
                 else:
                     tool_result = await execute_tool(tool_call)
+
+                recent_actions_buffer.append(f"Result: {str(tool_result)[:100]}")
                 
                 if "[FILE_DOWNLOADED]" in str(tool_result):
                     await output_handler(str(tool_result))
@@ -226,3 +243,35 @@ async def run_agent_telegram(
             return
     await output_handler("⚠️ Max turns reached. Stopping..")
 
+
+async def summarize_progress(history_text: str) -> str:
+    """
+    Takes raw execution logs and converts them into a 1-sentence status update.
+    """
+    if not history_text.strip():
+        return ""
+
+    messages = [
+        {
+            "role": "system",
+            "content": """You are a progress reporter. 
+            Read the recent technical execution logs and output a SINGLE sentence explaining what was just accomplished.
+            - No technical jargon (don't say 'clicked selector .btn').
+            - Say things like "I navigated to YouTube and searched for the video."
+            - Be brief.
+            """
+        },
+        {"role": "user", "content": f"Logs:\n{history_text}"},
+    ]
+
+    try:
+        response = await client.chat.completions.create(
+            model="deepseek-chat",
+            messages=messages,
+            temperature=0.7,
+            max_tokens=60
+        )
+        return response.choices[0].message.content.strip()
+    except Exception:
+        return ""
+    

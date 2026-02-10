@@ -1,4 +1,5 @@
 import os
+import re
 import asyncio
 from dotenv import load_dotenv
 from telegram import Update
@@ -108,18 +109,22 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     return
                 else:
                     await context.bot.send_message(chat_id=chat_id, text=f"⚠️ File downloaded but path not found: {filepath}")
+                    await asyncio.sleep(0.4)
             except Exception as e:
                 await context.bot.send_message(chat_id=chat_id, text=f"❌ Failed to upload file: {str(e)}")
                 print(f"Upload Error: {e}")
             return
+        
+        clean_text = re.sub(r'^###\s+(.*)$', r'<b>\1</b>', text, flags=re.MULTILINE)
+        clean_text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', clean_text)
 
         if "Thinking..." in text: return
         
         max_len = 4000
-        for i in range(0, len(text), max_len):
-            chunk = text[i:i+max_len]
+        for i in range(0, len(clean_text), max_len):
+            chunk = clean_text[i:i+max_len]
             try:
-                await context.bot.send_message(chat_id=chat_id, text=chunk)
+                await context.bot.send_message(chat_id=chat_id, text=chunk, parse_mode=ParseMode.HTML)
             except Exception as e:
                 print(f"Telegram Send Error: {e}")
 
