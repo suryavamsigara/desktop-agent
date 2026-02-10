@@ -56,17 +56,32 @@ async def browser_click(role: str = None, name: str = None, selector: str = None
     except Exception as e:
         return f"Click failed: {e}"
 
-async def browser_type(value: str, label: str = None, selector: str = None):
+async def browser_type(value: str, label: str = None, selector: str = None, role: str = None, name: str = None):
+    """
+    Types into a field. Supports Label, Selector, OR Role+Name (e.g. role="combobox", name="Search").
+    """
     session = await _ensure_session()
     page = session["page"]
     try:
-        target = page.get_by_label(label) if label else page.locator(selector)
+        target = None
+        
+        if role and name:
+            target = page.get_by_role(role, name=name).first
+        elif label:
+            target = page.get_by_label(label).first 
+        elif selector:
+            target = page.locator(selector).first
+        
+        if not target:
+            return "Error: You must provide (role+name), 'label', or 'selector'."
+
         await target.click()
         await target.fill(value)
         await page.keyboard.press("Enter")
-        return f"Typed '{value}' into {label or selector}"
+        
+        return f"Typed '{value}' into {name or label or selector} and clicked enter."
     except Exception as e:
-        return f"Typing failed: {e}"
+        return f"Typing failed: {str(e)}"
 
 async def browser_scroll(direction: str = "down"):
     session = await _ensure_session()

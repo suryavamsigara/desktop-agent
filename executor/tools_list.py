@@ -290,13 +290,15 @@ browser_tools = [
         "type": "function",
         "function": {
             "name": "browser_type",
-            "description": "Type text into a web input field.",
+            "description": "Type text into a web input field and clicks enter.",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "value": {"type": "string"},
+                    "value": {"type": "string", "description": "The text to type"},
+                    "role": {"type": "string", "description": "The ARIA role (e.g. 'combobox', 'textbox')"},
+                    "name": {"type": "string", "description": "The accessible name (e.g. 'Search')"},
                     "label": {"type": "string", "description": "The visible label of the input"},
-                    "selector": {"type": "string"}
+                    "selector": {"type": "string", "description": "CSS selector fallback"}
                 },
                 "required": ["value"]
             }
