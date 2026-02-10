@@ -4,24 +4,36 @@ import asyncio
 from typing import Any
 from playwright.async_api import async_playwright
 
-# Global state to keep the browser open between turns
 SESSIONS: dict[str, Any] = {}
 
 async def _ensure_session(session_id: str = "default") -> dict[str, Any]:
     if session_id in SESSIONS:
         return SESSIONS[session_id]
     
-    print(f"Launching Browser Session: {session_id}")
-    playwright = await async_playwright().start()
-    browser = await playwright.chromium.launch(
-        headless=False,
-        slow_mo=1000,
-        args=["--start-maximized"]
-    )
-    context = await browser.new_context(no_viewport=True)
-    page = await context.new_page()
+    print(f"Launching Persistent Browser Session: {session_id}")
+    
+    # Path to store the profile (cookies, cache, etc.)
+    user_data_dir = os.path.join(os.getcwd(), "browser_profiles", session_id)
+    os.makedirs(user_data_dir, exist_ok=True)
 
-    SESSIONS[session_id] = {"playwright": playwright, "browser": browser, "page": page}
+    playwright = await async_playwright().start()
+    
+    context = await playwright.chromium.launch_persistent_context(
+        user_data_dir,
+        headless=False,
+        channel="chrome",
+        slow_mo=1000,
+        args=[
+            "--start-maximized",
+            "--disable-blink-features=AutomationControlled"
+        ],
+        no_viewport=True,
+        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+    )
+
+    page = context.pages[0] if context.pages else await context.new_page()
+
+    SESSIONS[session_id] = {"playwright": playwright, "context": context, "page": page}
     return SESSIONS[session_id]
 
 async def browser_navigate(url: str):
@@ -100,7 +112,7 @@ async def browser_download(url: str, filename: str = None, session_id: str = "de
     - filename: (Optional) Name to save as. If None, tries to guess from URL.
     """
     session = await _ensure_session(session_id)
-    context = session["browser"].contexts[0]
+    context = session["context"]
     
     try:
         cookies = await context.cookies()
