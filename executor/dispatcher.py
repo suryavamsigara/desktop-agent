@@ -31,6 +31,9 @@ async def execute_tool(tool_call: Any):
         
         elif func_name == "browser_scroll":
             return await browser_scroll(**args)
+        
+        elif func_name == "browser_download":
+            return await browser_download(**args)
 
         # Desktop tools (Sync)
 

@@ -63,6 +63,7 @@ async def run_agent(user_query: str,
             3. **BROWSER RULES:**
                - Always use `browser_get_tree` after navigating to see the page.
                - Prefer `browser_click` (semantic) over `click_mouse` (coordinates) when inside the browser.
+               - If you fail to click an option inside a dropdown, try clicking the dropdown first, then sending the 'ArrowDown' and 'Enter' keys using the press_key tool.
             
             4. **GENERAL:**
                - Call one tool at a time.

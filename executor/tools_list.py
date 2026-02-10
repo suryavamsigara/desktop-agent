@@ -316,6 +316,28 @@ browser_tools = [
                 "required": ["direction"]
             }
         }
+    },
+
+    {
+        "type": "function",
+        "function": {
+            "name": "browser_download",
+            "description": "Download a file (PDF, Image, CSV) from a URL to the local disk.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string", 
+                        "description": "The direct URL of the file (href attribute)."
+                    },
+                    "filename": {
+                        "type": "string", 
+                        "description": "Optional name for the file (e.g. 'invoice_2024.pdf')."
+                    }
+                },
+                "required": ["url"]
+            }
+        }
     }
 ]
 

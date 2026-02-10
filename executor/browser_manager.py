@@ -1,3 +1,5 @@
+import os
+import requests
 import asyncio
 from typing import Any
 from playwright.async_api import async_playwright
@@ -90,3 +92,42 @@ async def browser_scroll(direction: str = "down"):
     await page.keyboard.press(key)
     await asyncio.sleep(1)
     return f"Scrolled {direction}"
+
+async def browser_download(url: str, filename: str = None, session_id: str = "default"):
+    """
+    Downloads a file from a URL using the current browser session (cookies).
+    - url: The direct link to the file.
+    - filename: (Optional) Name to save as. If None, tries to guess from URL.
+    """
+    session = await _ensure_session(session_id)
+    context = session["browser"].contexts[0]
+    
+    try:
+        cookies = await context.cookies()
+        session_cookies = {c['name']: c['value'] for c in cookies}
+        
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
+
+        if not filename:
+            filename = url.split("/")[-1].split("?")[0]
+            if not filename or "." not in filename:
+                filename = "downloaded_file.pdf"
+
+        download_dir = "downloads"
+        os.makedirs(download_dir, exist_ok=True)
+        filepath = os.path.join(download_dir, filename)
+
+        print(f"⬇️ Downloading {url}...")
+        response = requests.get(url, cookies=session_cookies, headers=headers, stream=True)
+        response.raise_for_status()
+
+        with open(filepath, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+        
+        return f"Success: File saved to {filepath}"
+
+    except Exception as e:
+        return f"Download failed: {str(e)}"
