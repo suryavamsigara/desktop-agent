@@ -17,6 +17,8 @@ async def stop_task(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if user_id in USER_SESSIONS and USER_SESSIONS[user_id]["is_running"]:
         USER_SESSIONS[user_id]["is_running"] = False
+        USER_SESSIONS[user_id]["is_waiting"] = False
+        USER_SESSIONS[user_id]["input_event"].set()
         await update.message.reply_text("🛑 Session reset. You can start a new task.")
     else:
         await update.message.reply_text("No active task to stop.")
@@ -31,6 +33,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # 1. Handle Replies (Agent asking a question)
     if user_id in USER_SESSIONS and USER_SESSIONS[user_id]["is_waiting"]:
         USER_SESSIONS[user_id]["last_reply"] = user_text
+        USER_SESSIONS[user_id]["is_waiting"] = False
         USER_SESSIONS[user_id]["input_event"].set()
         return
     
@@ -44,14 +47,45 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "is_running": True,
         "is_waiting": False,
         "input_event": asyncio.Event(),
-        "last_reply": None
+        "last_reply": None,
+        "task": None
     }
 
     await update.message.reply_text(f"🚀 Starting task: {user_text}")
 
+    async def wrapper():
+        try:
+            await run_agent_telegram(
+                user_query=user_text,
+                output_handler=telegram_output,
+                input_handler=telegram_input,
+            )
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="✅ Task Completed."
+            )
+        except asyncio.CancelledError:
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="🛑 Task Aborted."
+            )
+        except Exception as e:
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text=f"❌ Error: {str(e)}"
+            )
+        finally:
+            if user_id in USER_SESSIONS:
+                USER_SESSIONS[user_id]["is_running"] = False
+                USER_SESSIONS[user_id]["is_waiting"] = False
+    
+    USER_SESSIONS[user_id]["task"] = asyncio.create_task(wrapper())
+
     async def telegram_output(text: str):
         if not USER_SESSIONS[user_id]["is_running"]:
             raise asyncio.CancelledError("Stopped by user")
+        
+        await context.bot.send_chat_action(chat_id=update.effective_chat.id, action="typing")
 
         if "Thinking..." in text: return
         
@@ -75,24 +109,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         USER_SESSIONS[user_id]["is_waiting"] = False
         return USER_SESSIONS[user_id]["last_reply"]
-
-    try:
-        await run_agent_telegram(
-            user_query=user_text,
-            output_handler=telegram_output,
-            input_handler=telegram_input,
-        )
-        await update.message.reply_text("✅ Task Completed.")
-    except asyncio.CancelledError:
-        await update.message.reply_text("🛑 Task Aborted.")
-    except Exception as e:
-        if "Stopped by user" in str(e):
-             await update.message.reply_text("🛑 Task Aborted.")
-        else:
-             await update.message.reply_text(f"❌ Error: {str(e)}")
-    finally:
-        USER_SESSIONS[user_id]["is_running"] = False
-        USER_SESSIONS[user_id]["is_waiting"] = False
 
 def run_telegram_bot():
     TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")

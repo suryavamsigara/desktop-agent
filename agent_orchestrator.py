@@ -168,6 +168,8 @@ async def run_agent_telegram(
         {"role": "user", "content": user_query},
     ]
 
+    await output_handler("Working on it..")
+
     for turn in range(max_turns):
         response = await client.chat.completions.create(
             model="deepseek-chat",
@@ -181,12 +183,15 @@ async def run_agent_telegram(
         messages.append(message)
 
         if message.content:
+            clean_text = message.content
             if "[FINAL ANSWER]" in message.content:
                 final_text = extract_final_text(message.content)
                 await output_handler(f"🤖 {final_text}")
                 log.log_final(final_text)
                 return
-            await output_handler(f"{message.content}")
+
+            if not message.tool_calls:
+                await output_handler(f"{clean_text}")
 
         if message.tool_calls:
             for tool_call in message.tool_calls:
