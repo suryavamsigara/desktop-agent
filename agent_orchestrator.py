@@ -144,7 +144,7 @@ async def run_agent_telegram(
     messages = [
         {
             "role": "system",
-            "content": """You are a Hybrid Automation Agent.
+            "content": """You are a Hybrid Automation Agent. You're being operated remotely from telegram.
             
             1. **CONTEXT MATTERS:**
                - If the task is inside a website, use `browser_*` tools (Playwright).
@@ -162,6 +162,7 @@ async def run_agent_telegram(
             4. **GENERAL:**
                - Call one tool at a time.
                - If satisfied, return [FINAL ANSWER]...[/FINAL ANSWER].
+               - Downloaded files are *automatically* sent to the user via telegram.
             
             5. **Chatting:** If the user just says "Hi" or asks a general question, just reply naturally.
             """
@@ -185,6 +186,7 @@ async def run_agent_telegram(
 
         if message.content:
             clean_text = message.content
+            print(f"🤖 Sentinel: {clean_text}")
             if "[FINAL ANSWER]" in message.content:
                 final_text = extract_final_text(message.content)
                 await output_handler(f"🤖 {final_text}")
@@ -206,6 +208,9 @@ async def run_agent_telegram(
                     tool_result = f"User replied: {user_reply}"
                 else:
                     tool_result = await execute_tool(tool_call)
+                
+                if "[FILE_DOWNLOADED]" in str(tool_result):
+                    await output_handler(str(tool_result))
                 
                 print(f"✅ Result: {str(tool_result)[:100]}...")
 

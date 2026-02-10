@@ -127,7 +127,7 @@ async def browser_download(url: str, filename: str = None, session_id: str = "de
             for chunk in response.iter_content(chunk_size=8192):
                 f.write(chunk)
         
-        return f"Success: File saved to {filepath}"
+        return f"[FILE_DOWNLOADED] {filepath}"
 
     except Exception as e:
         return f"Download failed: {str(e)}"

@@ -92,13 +92,34 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         await context.bot.send_chat_action(chat_id=chat_id, action="typing")
 
+        if "[FILE_DOWNLOADED]" in text:
+            try:
+                filepath = text.split("[FILE_DOWNLOADED]")[1].strip()
+
+                if os.path.exists(filepath):
+                    await context.bot.send_document(
+                        chat_id=chat_id,
+                        document=open(filepath, 'rb'),
+                        caption=f"📂 Here is your file: {os.path.basename(filepath)}",
+                        read_timeout=120,
+                        write_timeout=120,
+                        connect_timeout=60
+                    )
+                    return
+                else:
+                    await context.bot.send_message(chat_id=chat_id, text=f"⚠️ File downloaded but path not found: {filepath}")
+            except Exception as e:
+                await context.bot.send_message(chat_id=chat_id, text=f"❌ Failed to upload file: {str(e)}")
+                print(f"Upload Error: {e}")
+            return
+
         if "Thinking..." in text: return
         
         max_len = 4000
         for i in range(0, len(text), max_len):
             chunk = text[i:i+max_len]
             try:
-                await update.message.reply_text(chunk)
+                await context.bot.send_message(chat_id=chat_id, text=chunk)
             except Exception as e:
                 print(f"Telegram Send Error: {e}")
 
