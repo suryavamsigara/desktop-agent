@@ -25,16 +25,24 @@ async def default_input_handler(question: str) -> str:
     """Default: Ask user via temrinal"""
     return input(f"\n[Sentinel Asking]: {question}\nAnswer: ")
 
-def extract_final_text(text: str) -> str:
-    start_tag = "[FINAL ANSWER]"
-    end_tag = "[/FINAL ANSWER]"
+import re
 
-    if start_tag in text:
-        start = text.find(start_tag) + len(start_tag)
-        end = text.find(end_tag, start)
-        if end == -1:
-            return text[start:].strip()
-        return text[start:end].strip()
+def extract_final_text(text: str) -> str:
+    """
+    Extracts text inside [FINAL ANSWER]...[/FINAL ANSWER]
+    """
+    pattern = r"(?:^|\n)\[FINAL ANSWER\]"
+    
+    match = re.search(pattern, text)
+    
+    if match:
+        start_index = match.end()
+        end_tag = "[/FINAL ANSWER]"
+        end_index = text.find(end_tag, start_index)
+        
+        if end_index == -1:
+            return text[start_index:].strip()
+        return text[start_index:end_index].strip()
     return text.strip()
 
 

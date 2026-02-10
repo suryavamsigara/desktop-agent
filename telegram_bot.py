@@ -41,7 +41,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     # 2. Prevent concurrent tasks
     if user_id in USER_SESSIONS and USER_SESSIONS[user_id]["is_running"]:
-        await update.message.reply_text("⚠️ Agent is busy. Use /stop to abort.")
+        await context.bot.send_message(chat_id=chat_id, text="⚠️ Agent is busy. Use /stop to abort.")
         return
     
     # 3. LOCK SESSION IMMEDIATELY
@@ -54,7 +54,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "task": None
     }
 
-    await update.message.reply_text(f"🚀 Starting task: {user_text}")
+    await context.bot.send_message(chat_id=chat_id, text=f"🚀 Starting task: {user_text}")
 
     async def wrapper():
         try:
@@ -115,7 +115,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 print(f"Upload Error: {e}")
             return
         
-        clean_text = re.sub(r'^###\s+(.*)$', r'<b>\1</b>', text, flags=re.MULTILINE)
+        # clean_text = re.sub(r'^###\s+(.*)$', r'<b>\1</b>', text, flags=re.MULTILINE)
+        # clean_text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', clean_text)
+        clean_text = re.sub(r'^(?:#+)\s+(.*)$', r'<b>\1</b>', text, flags=re.MULTILINE)
         clean_text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', clean_text)
 
         if "Thinking..." in text: return
