@@ -14,6 +14,10 @@ It combines:
 
 All in **one agent loop** that reasons, acts, asks you when stuck, downloads files, and gives updates.
 
+## Demo:
+
+https://github.com/user-attachments/assets/9f3650df-4dbd-46ba-8990-087a33256aff
+
 ## Examples of what it can do: (The following are sent via telegram)
 1. "Download the latest paper from DeepSeek and send it."
 2. "I'm driving now. Order chapathi and biryani on Zomato."
